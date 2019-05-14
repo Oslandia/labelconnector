@@ -224,8 +224,8 @@ class LabelConnector:
         self.layer = self.iface.activeLayer()
         
         if not self.layer or (self.layer.type() != QgsMapLayer.VectorLayer):
-            QMessageBox.warning(self.iface.mainWindow(), "No active vector layer",
-                    "Label connector requires a vector layer")
+            QMessageBox.warning(self.iface.mainWindow(), self.tr("No active vector layer"),
+                    self.tr("Label connector requires a vector layer"))
             return
 
         ret = False
@@ -245,8 +245,8 @@ class LabelConnector:
             if expressionFile:
                 ret = self.applyStyle(expressionFile)
             else:
-                QMessageBox.critical(self.iface.mainWindow(), "No expression file",
-                        "Cannot find a previous expression file applied.")
+                QMessageBox.critical(self.iface.mainWindow(), self.tr("No expression file"),
+                        self.tr("Cannot find a previous expression file applied."))
 
         QSettings().setValue("LabelConnector/lastFile", expressionFile)
 
@@ -263,20 +263,20 @@ class LabelConnector:
                         sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
                         sym.appendSymbolLayer(sym_layer)
                     else:
-                        QMessageBox.warning(self.iface.mainWindow(), "Current style",
-                                "Cannot change current style to 'label_style'")
+                        QMessageBox.warning(self.iface.mainWindow(), self.tr("Current style"),
+                                self.tr("Cannot change current style to 'label_style'"))
                         return False
                 else:
-                    QMessageBox.warning(self.iface.mainWindow(), "Add style",
-                            "Cannot add new style 'label_style'")
+                    QMessageBox.warning(self.iface.mainWindow(), self.tr("Add style"),
+                            self.tr("Cannot add new style 'label_style'"))
                     return False
             if self.iface.mapCanvas().isCachingEnabled():
                 self.layer.triggerRepaint()
             else:
                 self.iface.mapCanvas().refresh()
         except Exception as e:
-            QMessageBox.critical(self.iface.mainWindow(), "Cannot open file",
-                    "Cannot open file {}\Error {}".format(expressionFile, str(e)))
+            QMessageBox.critical(self.iface.mainWindow(), self.tr("Error"),
+                    "{}".format(str(e)))
             return False
 
         return True

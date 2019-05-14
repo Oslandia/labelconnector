@@ -26,27 +26,27 @@
 #Add iso code for any locales you want to support here (space separated)
 # default is no locales
 # LOCALES = af
-LOCALES =
+LOCALES = fr
 
 # If locales are enabled, set the name of the lrelease binary on your system. If
 # you have trouble compiling the translations, you may have to specify the full path to
 # lrelease
 #LRELEASE = lrelease
-#LRELEASE = lrelease-qt4
+LRELEASE = lrelease
 
 
 # translation
 SOURCES = \
 	__init__.py \
-	label_connector.py label_connector_dialog.py
+	label_connector.py label_connector_dialog.py label_connector_settings.py
 
 PLUGINNAME = label_connector
 
 PY_FILES = \
 	__init__.py \
-	label_connector.py label_connector_dialog.py
+	label_connector.py label_connector_dialog.py label_connector_settings.py
 
-UI_FILES = label_connector_dialog_base.ui
+UI_FILES = label_connector_dialog_base.ui label_connector_dialog_settings.ui
 
 EXTRAS = metadata.txt icon.png
 
