@@ -22,10 +22,10 @@
  ***************************************************************************/
 """
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
 from PyQt5 import QtXml
-from qgis.core import QgsMapLayer
+from qgis.core import QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -229,64 +229,55 @@ class LabelConnector:
             return
 
         ret = False
-        styleFile = ""
+        expressionFile = ""
         if QSettings().value("LabelConnector/showWindow", True):
             # show the dialog
             self.dlg.show()
             # Run the dialog event loop
             result = self.dlg.exec_()
             if result:
-                styleFile = self.dlg.labelStyleCombo.currentData() 
-                ret = self.applyStyle(styleFile)
+                expressionFile = self.dlg.labelStyleCombo.currentData() 
+                ret = self.applyStyle(expressionFile)
                 QSettings().setValue("LabelConnector/showWindow",
                         not self.dlg.dontShowBox.isChecked())
         else:
-            styleFile = QSettings().value("LabelConnector/lastFile", "")
-            if styleFile:
-                ret = self.applyStyle(styleFile)
+            expressionFile = QSettings().value("LabelConnector/lastFile", "")
+            if expressionFile:
+                ret = self.applyStyle(expressionFile)
             else:
-                QMessageBox.critical(self.iface.mainWindow(), "No saved QML file",
-                        "Cannot find a previous style applied.")
+                QMessageBox.critical(self.iface.mainWindow(), "No expression file",
+                        "Cannot find a previous expression file applied.")
 
-        QSettings().setValue("LabelConnector/lastFile", styleFile)
+        QSettings().setValue("LabelConnector/lastFile", expressionFile)
 
-    def applyStyle(self, styleFile):
-        doc = self.readXmlDocument(styleFile)
-        if doc:
-            styleManager = self.layer.styleManager()
-            if styleManager.addStyleFromLayer("label_style"):
-                if styleManager.setCurrentStyle("label_style"):
-                    self.layer.importNamedStyle(doc)
+    def applyStyle(self, expressionFile):
+        try:
+            with open(expressionFile, 'r') as f:
+                expr = ''.join(f.readlines())
+                styleManager = self.layer.styleManager()
+                if styleManager.addStyleFromLayer("label_style"):
+                    if styleManager.setCurrentStyle("label_style"):
+                        sym = self.layer.renderer().symbol()
+                        sym_layer = QgsGeometryGeneratorSymbolLayer.create({'geometryModifier': expr })
+                        sym_layer.setSymbolType(QgsSymbol.Line)
+                        sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
+                        sym.appendSymbolLayer(sym_layer)
+                    else:
+                        QMessageBox.warning(self.iface.mainWindow(), "Current style",
+                                "Cannot change current style to 'label_style'")
+                        return False
                 else:
-                    QMessageBox.warning(self.iface.mainWindow(), "Current style",
-                            "Cannot change current style to 'label_style'")
+                    QMessageBox.warning(self.iface.mainWindow(), "Add style",
+                            "Cannot add new style 'label_style'")
                     return False
-            else:
-                QMessageBox.warning(self.iface.mainWindow(), "Add style",
-                        "Cannot add new style 'label_style'")
-                return False
-
             if self.iface.mapCanvas().isCachingEnabled():
                 self.layer.triggerRepaint()
             else:
                 self.iface.mapCanvas().refresh()
+        except Exception as e:
+            QMessageBox.critical(self.iface.mainWindow(), "Cannot open file",
+                    "Cannot open file {}\Error {}".format(expressionFile, str(e)))
+            return False
 
         return True
-        # TODO
-        # Change name of label string : first field
         
-
-    def readXmlDocument(self, qmlFile):
-        contentsDoc = QtXml.QDomDocument()
-
-        xml_file = QtCore.QFile(qmlFile)
-        statusOK, errorStr, errorLine, errorColumn = \
-                contentsDoc.setContent(xml_file, True)
-
-        if not statusOK:
-            QMessageBox.critical(self.iface.mainWindow(), "DOM Parser",
-                    "Could not read or find the contents document. Error at "
-                    "line %d, column %d:\n%s" % (errorLine, errorColumn, errorStr))
-            return None
-        return contentsDoc
-

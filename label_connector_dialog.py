@@ -50,8 +50,8 @@ class LabelConnectorDialog(QtWidgets.QDialog, FORM_CLASS):
         if os.path.isdir(stylesDir):
             for f in os.listdir(stylesDir):
                 styleFile = os.path.join(stylesDir, f)
-                if os.path.isfile(styleFile) and f.endswith(".qml"):
-                    self.labelStyleCombo.addItem(f[:-4], styleFile)
+                if os.path.isfile(styleFile):
+                    self.labelStyleCombo.addItem(f, styleFile)
         else:
             os.mkdir(stylesDir)
 
