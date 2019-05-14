@@ -23,7 +23,7 @@
 """
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction, QMessageBox
+from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
 from PyQt5 import QtXml
 from qgis.core import QgsMapLayer
 
@@ -62,6 +62,13 @@ class LabelConnector:
 
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
+
+        # define toolBar by default find the label toolbar
+        # else it will be the plugin toolbar
+        self.toolBar = self.iface.mainWindow().findChild(QToolBar, "mLabelToolBar")
+        if not self.toolBar:
+            print("Label toolbar not found\n")
+            self.toolBar = pluginToolBar()
 
         # Declare instance attributes
         self.actions = []
@@ -150,7 +157,7 @@ class LabelConnector:
 
         if add_to_toolbar:
             # Adds plugin icon to Plugins toolbar
-            self.iface.addToolBarIcon(action)
+            self.toolBar.addAction(action)
 
         if add_to_menu:
             self.iface.addPluginToMenu(
@@ -181,7 +188,7 @@ class LabelConnector:
             self.iface.removePluginMenu(
                 self.tr(u'&Label Connector'),
                 action)
-            self.iface.removeToolBarIcon(action)
+            self.toolBar.removeAction(action)
 
 
     def run(self):
