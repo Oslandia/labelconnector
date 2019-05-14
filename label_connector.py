@@ -31,6 +31,7 @@ from qgis.core import QgsMapLayer
 from .resources import *
 # Import the code for the dialog
 from .label_connector_dialog import LabelConnectorDialog
+from .label_connector_settings import LabelConnectorSettings
 import os.path
 
 
@@ -171,12 +172,22 @@ class LabelConnector:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        # label connector 
         icon_path = ':/plugins/label_connector/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Create label connector'),
             callback=self.run,
             parent=self.iface.mainWindow())
+        
+        # settings
+        icon_path = ':/plugins/label_connector/icon.png'
+        self.add_action(
+            icon_path,
+            text=self.tr(u'Label connector settings'),
+            callback=self.runSettings,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False)
 
         # will be set False in run()
         self.first_start = True
@@ -189,6 +200,16 @@ class LabelConnector:
                 self.tr(u'&Label Connector'),
                 action)
             self.toolBar.removeAction(action)
+
+    def runSettings(self):
+        dlgSettings = LabelConnectorSettings()
+        # show the dialog
+        dlgSettings.show()
+        # Run the dialog event loop
+        result = dlgSettings.exec_()
+        if result:
+            QSettings().setValue("LabelConnector/showWindow",
+                    not dlgSettings.checkBox.isChecked())
 
 
     def run(self):
