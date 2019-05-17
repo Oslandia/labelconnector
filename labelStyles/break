@@ -1,0 +1,20 @@
+ make_line( 
+point_on_surface($geometry), 
+make_point(
+"auxiliary_storage_labeling_positionx" + 
+CASE WHEN 
+"auxiliary_storage_labeling_positionx" < x(point_on_surface($geometry)) 
+THEN 
+1 
+ELSE 
+-1 
+END 
+* distance(
+point_on_surface($geometry), 
+make_point("auxiliary_storage_labeling_positionx", "auxiliary_storage_labeling_positiony")
+) / 2.0,
+
+"auxiliary_storage_labeling_positiony"),
+
+make_point("auxiliary_storage_labeling_positionx", "auxiliary_storage_labeling_positiony")
+ )

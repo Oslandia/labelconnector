@@ -1,0 +1,7 @@
+make_line( 
+make_point("auxiliary_storage_labeling_positionx", "auxiliary_storage_labeling_positiony"), --end
+make_point("auxiliary_storage_labeling_positionx" + (x(point_on_surface($geometry)) - "auxiliary_storage_labeling_positionx") / 2.0 , "auxiliary_storage_labeling_positiony" ),
+make_point("auxiliary_storage_labeling_positionx" + (x(point_on_surface($geometry)) - "auxiliary_storage_labeling_positionx") / 2.0 ,y(point_on_surface($geometry) )),
+point_on_surface($geometry) --start point
+) 
+
