@@ -36,7 +36,6 @@ from .resources import *
 # Import the code for the dialog
 from .label_connector_dialog import LabelConnectorDialog
 from .label_connector_settings import LabelConnectorSettings
-import os.path
 
 
 class LabelConnector:
@@ -251,6 +250,7 @@ class LabelConnector:
 
         QSettings().setValue("LabelConnector/lastFile", expressionFile)
 
+    # Method to create an auxiliary storage if not there
     def checkAuxiliaryStorage(self):
         if not self.layer.auxiliaryLayer():
             dlg = QgsNewAuxiliaryLayerDialog(self.layer)
@@ -276,6 +276,7 @@ class LabelConnector:
 
         self.layer.auxiliaryLayer().save()
 
+    #Method to create the necessary data defined properties for X Y and Alignement
     def createDefinedProperties(self):
         props = (('"auxiliary_storage_labeling_positionx"', QgsPalLayerSettings.PositionX),
                  ('"auxiliary_storage_labeling_positiony"',
