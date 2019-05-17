@@ -14,8 +14,8 @@ version=0.1
 author=Oslandia
 email=infos@oslandia.com
 
-about=This plugin creates label connector (line from centroid to the label).
-
+about=This plugin creates label connector (line from centroid to the label). Funded by French Ministry of Ecology
+about[fr]=Cette extension crée des connecteurs d'étiquettes déplacées manuellement (du centre de l'objet). Financé par le Ministère en charge de la transition écologique
 tracker=https://github.com/oslandia/labelconnector
 repository=https://github.com/oslandia/labelconnector
 # End of mandatory metadata
@@ -24,9 +24,11 @@ repository=https://github.com/oslandia/labelconnector
 
 # Uncomment the following line and add your changelog:
 # changelog=
+# changelog[fr]=
 
 # Tags are comma separated with spaces allowed
-tags=geometry, field, attribute, labeling, line, style
+tags=geometry, field, attribute, labeling, line, style, callouts, connectors
+tags[fr]=étiquetage, connecteurs, lignes, EasyCustomLabeling, étiquettes
 
 homepage=https://github.com/oslandia/labelconnector
 category=Plugins
