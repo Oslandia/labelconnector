@@ -104,7 +104,7 @@ class LabelConnector:
             enabled_flag=True,
             add_to_menu=True,
             add_to_toolbar=True,
-            status_tip=None,
+            status_tip='Adds a symbol showing connectors when labels are manually moved',
             whats_this=None,
             parent=None):
         """Add a toolbar icon to the toolbar.
