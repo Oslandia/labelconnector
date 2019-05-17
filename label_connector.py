@@ -281,7 +281,7 @@ class LabelConnector:
                  ('"auxiliary_storage_labeling_positiony"',
                   QgsPalLayerSettings.PositionY),
                  ('case when  "auxiliary_storage_labeling_positionx" < x(point_on_surface($geometry)) then \'Right\' else \'Left\' end', QgsPalLayerSettings.Hali),
-                 ('case when  "auxiliary_storage_labeling_positiony" < y(point_on_surface($geometry)) then \'Top\' else \'Bottom\' end', QgsPalLayerSettings.Vali))
+                 ('Half', QgsPalLayerSettings.Vali))
 
         pc = QgsPropertyCollection('labelConnector')
         for prop in props:
