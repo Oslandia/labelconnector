@@ -21,6 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import os.path
 import uuid
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon, QColor
