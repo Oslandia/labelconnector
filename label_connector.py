@@ -25,7 +25,9 @@ from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
 from PyQt5 import QtXml
-from qgis.core import QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol
+from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
+                       QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling)
+from qgis.gui import QgsNewAuxiliaryLayerDialog
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -94,18 +96,17 @@ class LabelConnector:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('LabelConnector', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -172,14 +173,14 @@ class LabelConnector:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        # label connector 
+        # label connector
         icon_path = ':/plugins/label_connector/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Create label connector'),
             callback=self.run,
             parent=self.iface.mainWindow())
-        
+
         # settings
         icon_path = ':/plugins/label_connector/icon.png'
         self.add_action(
@@ -191,7 +192,6 @@ class LabelConnector:
 
         # will be set False in run()
         self.first_start = True
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -209,8 +209,7 @@ class LabelConnector:
         result = dlgSettings.exec_()
         if result:
             QSettings().setValue("LabelConnector/showWindow",
-                    not dlgSettings.checkBox.isChecked())
-
+                                 not dlgSettings.checkBox.isChecked())
 
     def run(self):
         """Run method that performs all the real work"""
@@ -222,10 +221,10 @@ class LabelConnector:
             self.dlg = LabelConnectorDialog()
 
         self.layer = self.iface.activeLayer()
-        
+
         if not self.layer or (self.layer.type() != QgsMapLayer.VectorLayer):
             QMessageBox.warning(self.iface.mainWindow(), self.tr("No active vector layer"),
-                    self.tr("Label connector requires a vector layer"))
+                                self.tr("Label connector requires a vector layer"))
             return
 
         ret = False
@@ -236,19 +235,67 @@ class LabelConnector:
             # Run the dialog event loop
             result = self.dlg.exec_()
             if result:
-                expressionFile = self.dlg.labelStyleCombo.currentData() 
+                expressionFile = self.dlg.labelStyleCombo.currentData()
                 ret = self.applyStyle(expressionFile)
                 QSettings().setValue("LabelConnector/showWindow",
-                        not self.dlg.dontShowBox.isChecked())
+                                     not self.dlg.dontShowBox.isChecked())
         else:
             expressionFile = QSettings().value("LabelConnector/lastFile", "")
             if expressionFile:
                 ret = self.applyStyle(expressionFile)
             else:
                 QMessageBox.critical(self.iface.mainWindow(), self.tr("No expression file"),
-                        self.tr("Cannot find a previous expression file applied."))
+                                     self.tr("Cannot find a previous expression file applied."))
 
         QSettings().setValue("LabelConnector/lastFile", expressionFile)
+
+    def checkAuxiliaryStorage(self):
+        if not self.layer.auxiliaryLayer():
+            dlg = QgsNewAuxiliaryLayerDialog(self.layer)
+            dlg.exec_()
+
+        if not self.layer.auxiliaryLayer():
+            QMessageBox.critical(self.iface.mainWindow(), self.tr("Auxiliary Layer Error"),
+                                 "{}".format("Cannot create auxiliary storage for {}".format(self.layer.name())))
+            return False
+
+        return True
+
+    def createAuxiliaryFields(self):
+        props = (('PositionX', QgsPropertyDefinition.DataTypeNumeric, 'labeling'),
+                 ('PositionY', QgsPropertyDefinition.DataTypeNumeric, 'labeling'),
+                 ('Hali', QgsPropertyDefinition.DataTypeString, 'labeling'),
+                 ('Vali', QgsPropertyDefinition.DataTypeString, 'labeling'))
+
+        for prop in props:
+            p = QgsPropertyDefinition(prop[0], prop[1], '', '', prop[2])
+            if not self.layer.auxiliaryLayer().exists(p):
+                self.layer.auxiliaryLayer().addAuxiliaryField(p)
+
+        self.layer.auxiliaryLayer().save()
+
+    def createDefinedProperties(self):
+        props = (('"auxiliary_storage_labeling_positionx"', QgsPalLayerSettings.PositionX),
+                 ('"auxiliary_storage_labeling_positiony"',
+                  QgsPalLayerSettings.PositionY),
+                 ('case when  "auxiliary_storage_labeling_positionx" < x(point_on_surface($geometry)) then \'Right\' else \'Left\' end', QgsPalLayerSettings.Hali),
+                 ('case when  "auxiliary_storage_labeling_positiony" < y(point_on_surface($geometry)) then \'Top\' else \'Bottom\' end', QgsPalLayerSettings.Vali))
+
+        pc = QgsPropertyCollection('labelConnector')
+        for prop in props:
+            p = QgsProperty()
+            p.setExpressionString(prop[0])
+            pc.setProperty(prop[1], p)
+
+        pal_layer = QgsPalLayerSettings()
+        pal_layer.setDataDefinedProperties(pc)
+        pal_layer.fieldName = self.layer.fields()[0].name()
+        pal_layer.enabled = True
+
+        labeler = QgsVectorLayerSimpleLabeling(pal_layer)
+
+        self.layer.setLabeling(labeler)
+        self.layer.setLabelsEnabled(True)
 
     def applyStyle(self, expressionFile):
         try:
@@ -257,18 +304,23 @@ class LabelConnector:
                 styleManager = self.layer.styleManager()
                 if styleManager.addStyleFromLayer("label_style"):
                     if styleManager.setCurrentStyle("label_style"):
+                        if self.checkAuxiliaryStorage():
+                            self.createAuxiliaryFields()
+                            self.createDefinedProperties()
+
                         sym = self.layer.renderer().symbol()
-                        sym_layer = QgsGeometryGeneratorSymbolLayer.create({'geometryModifier': expr })
+                        sym_layer = QgsGeometryGeneratorSymbolLayer.create(
+                            {'geometryModifier': expr})
                         sym_layer.setSymbolType(QgsSymbol.Line)
                         sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
                         sym.appendSymbolLayer(sym_layer)
                     else:
                         QMessageBox.warning(self.iface.mainWindow(), self.tr("Current style"),
-                                self.tr("Cannot change current style to 'label_style'"))
+                                            self.tr("Cannot change current style to 'label_style'"))
                         return False
                 else:
                     QMessageBox.warning(self.iface.mainWindow(), self.tr("Add style"),
-                            self.tr("Cannot add new style 'label_style'"))
+                                        self.tr("Cannot add new style 'label_style'"))
                     return False
             if self.iface.mapCanvas().isCachingEnabled():
                 self.layer.triggerRepaint()
@@ -276,8 +328,7 @@ class LabelConnector:
                 self.iface.mapCanvas().refresh()
         except Exception as e:
             QMessageBox.critical(self.iface.mainWindow(), self.tr("Error"),
-                    "{}".format(str(e)))
+                                 "{}".format(str(e)))
             return False
 
         return True
-        

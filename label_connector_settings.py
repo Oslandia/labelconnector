@@ -44,5 +44,6 @@ class LabelConnectorSettings(QtWidgets.QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
-        self.checkBox.setChecked(not QSettings().value("LabelConnector/showWindow", False))
+        self.checkBox.setChecked(not QSettings().value(
+            "LabelConnector/showWindow", False))
         self.lastFile.setText(QSettings().value("LabelConnector/lastFile", ""))
