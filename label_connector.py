@@ -174,7 +174,7 @@ class LabelConnector:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         # label connector
-        icon_path = ':/plugins/label_connector/icon.png'
+        icon_path = ':/plugins/label_connector/labelStyles.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Create label connector'),
@@ -182,7 +182,7 @@ class LabelConnector:
             parent=self.iface.mainWindow())
 
         # settings
-        icon_path = ':/plugins/label_connector/icon.png'
+        icon_path = ':/plugins/label_connector/labelStyles.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Label connector settings'),

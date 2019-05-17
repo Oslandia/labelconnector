@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/plugins/label_connector" >
-        <file>icon.png</file>
+        <file>labelStyles.png</file>
     </qresource>
 </RCC>

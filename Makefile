@@ -48,7 +48,7 @@ PY_FILES = \
 
 UI_FILES = label_connector_dialog_base.ui label_connector_dialog_settings.ui
 
-EXTRAS = metadata.txt icon.png
+EXTRAS = metadata.txt label_style.png
 
 EXTRA_DIRS =
 
@@ -65,7 +65,7 @@ PEP8EXCLUDE=pydev,resources.py,conf.py,third_party,ui
 #	* Windows:
 #	  AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins'
 
-QGISDIR=/home/lbartoletti/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
+QGISDIR=~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
 
 #################################################
 # Normally you would not need to edit below here
