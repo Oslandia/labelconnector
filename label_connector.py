@@ -21,6 +21,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+import os.path
+import uuid
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
@@ -34,7 +36,6 @@ from .resources import *
 # Import the code for the dialog
 from .label_connector_dialog import LabelConnectorDialog
 from .label_connector_settings import LabelConnectorSettings
-import os.path
 
 
 class LabelConnector:
@@ -249,6 +250,7 @@ class LabelConnector:
 
         QSettings().setValue("LabelConnector/lastFile", expressionFile)
 
+    # Method to create an auxiliary storage if not there
     def checkAuxiliaryStorage(self):
         if not self.layer.auxiliaryLayer():
             dlg = QgsNewAuxiliaryLayerDialog(self.layer)
@@ -274,12 +276,13 @@ class LabelConnector:
 
         self.layer.auxiliaryLayer().save()
 
+    #Method to create the necessary data defined properties for X Y and Alignement
     def createDefinedProperties(self):
         props = (('"auxiliary_storage_labeling_positionx"', QgsPalLayerSettings.PositionX),
                  ('"auxiliary_storage_labeling_positiony"',
                   QgsPalLayerSettings.PositionY),
                  ('case when  "auxiliary_storage_labeling_positionx" < x(point_on_surface($geometry)) then \'Right\' else \'Left\' end', QgsPalLayerSettings.Hali),
-                 ('case when  "auxiliary_storage_labeling_positiony" < y(point_on_surface($geometry)) then \'Top\' else \'Bottom\' end', QgsPalLayerSettings.Vali))
+                 ('Half', QgsPalLayerSettings.Vali))
 
         pc = QgsPropertyCollection('labelConnector')
         for prop in props:
@@ -297,13 +300,29 @@ class LabelConnector:
         self.layer.setLabeling(labeler)
         self.layer.setLabelsEnabled(True)
 
+
+    # Method applying the connector style
     def applyStyle(self, expressionFile):
         try:
             with open(expressionFile, 'r') as f:
+                
+                #read expression from file
                 expr = ''.join(f.readlines())
                 styleManager = self.layer.styleManager()
-                if styleManager.addStyleFromLayer("label_style"):
-                    if styleManager.setCurrentStyle("label_style"):
+                
+                # Add style by cloning the current one 
+                styleName = "label_connector_style"
+
+                # Checks if style with the same name already exists, if so increment its name with a 4 digits uuid
+                if styleName in styleManager.mapLayerStyles(): 
+                    styleName = "label_connector_style_" + uuid.uuid4().hex[:4] 
+
+                if styleManager.addStyleFromLayer(styleName):
+                
+                    # Changes the new style
+                    if styleManager.setCurrentStyle(styleName):
+                
+                        # create an auxiliary storage if not present
                         if self.checkAuxiliaryStorage():
                             self.createAuxiliaryFields()
                             self.createDefinedProperties()
@@ -316,11 +335,11 @@ class LabelConnector:
                         sym.appendSymbolLayer(sym_layer)
                     else:
                         QMessageBox.warning(self.iface.mainWindow(), self.tr("Current style"),
-                                            self.tr("Cannot change current style to 'label_style'"))
+                                            self.tr("Cannot change current style to '%'", styleName))
                         return False
                 else:
                     QMessageBox.warning(self.iface.mainWindow(), self.tr("Add style"),
-                                        self.tr("Cannot add new style 'label_style'"))
+                                        self.tr("Cannot add new style '%'", styleName))
                     return False
             if self.iface.mapCanvas().isCachingEnabled():
                 self.layer.triggerRepaint()
