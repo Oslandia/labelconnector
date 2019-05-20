@@ -23,9 +23,11 @@
 """
 
 import os
+import ntpath
 
 from PyQt5 import uic
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
+from .label_connector_utils import populateComboBox
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -42,17 +44,13 @@ class LabelConnectorDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        self.populateComboBox()
+        populateComboBox(self.labelStyleCombo)
+        self.rememberChoice.setChecked(
+            not QtCore.QSettings().value("LabelConnector/showWindow", True))
 
-    def populateComboBox(self):
-        self.labelStyleCombo.clear()
-        stylesDir = os.path.join(os.path.dirname(__file__), "labelStyles")
-        if os.path.isdir(stylesDir):
-            for f in os.listdir(stylesDir):
-                styleFile = os.path.join(stylesDir, f)
-                if os.path.isfile(styleFile):
-                    self.labelStyleCombo.addItem(f, styleFile)
-        else:
-            os.mkdir(stylesDir)
+        lastFile = QtCore.QSettings().value("LabelConnector/lastFile", "")
+
+        populateComboBox(self.labelStyleCombo)
+        self.labelStyleCombo.setCurrentText(ntpath.basename(lastFile))
 
         self.button_box.setEnabled(self.labelStyleCombo.count() > 0)

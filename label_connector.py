@@ -23,6 +23,7 @@
 """
 import os.path
 import uuid
+import ntpath
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
@@ -36,6 +37,7 @@ from .resources import *
 # Import the code for the dialog
 from .label_connector_dialog import LabelConnectorDialog
 from .label_connector_settings import LabelConnectorSettings
+from .label_connector_utils import populateComboBox
 
 
 class LabelConnector:
@@ -210,7 +212,9 @@ class LabelConnector:
         result = dlgSettings.exec_()
         if result:
             QSettings().setValue("LabelConnector/showWindow",
-                                 not dlgSettings.checkBox.isChecked())
+                                 dlgSettings.checkBox.isChecked())
+            QSettings().setValue("LabelConnector/lastFile",
+                                 dlgSettings.defaultStyle.currentData())
 
     def run(self):
         """Run method that performs all the real work"""
@@ -228,8 +232,9 @@ class LabelConnector:
                                 self.tr("Label connector requires a vector layer"))
             return
 
+        expressionFile = QSettings().value("LabelConnector/lastFile", "")
+
         ret = False
-        expressionFile = ""
         if QSettings().value("LabelConnector/showWindow", True):
             # show the dialog
             self.dlg.show()
@@ -239,9 +244,8 @@ class LabelConnector:
                 expressionFile = self.dlg.labelStyleCombo.currentData()
                 ret = self.applyStyle(expressionFile)
                 QSettings().setValue("LabelConnector/showWindow",
-                                     not self.dlg.dontShowBox.isChecked())
+                                     not self.dlg.rememberChoice.isChecked())
         else:
-            expressionFile = QSettings().value("LabelConnector/lastFile", "")
             if expressionFile:
                 ret = self.applyStyle(expressionFile)
             else:
@@ -276,7 +280,7 @@ class LabelConnector:
 
         self.layer.auxiliaryLayer().save()
 
-    #Method to create the necessary data defined properties for X Y and Alignement
+    # Method to create the necessary data defined properties for X Y and Alignement
     def createDefinedProperties(self):
         props = (('"auxiliary_storage_labeling_positionx"', QgsPalLayerSettings.PositionX),
                  ('"auxiliary_storage_labeling_positiony"',
@@ -300,28 +304,28 @@ class LabelConnector:
         self.layer.setLabeling(labeler)
         self.layer.setLabelsEnabled(True)
 
-
     # Method applying the connector style
+
     def applyStyle(self, expressionFile):
         try:
             with open(expressionFile, 'r') as f:
-                
-                #read expression from file
+
+                # read expression from file
                 expr = ''.join(f.readlines())
                 styleManager = self.layer.styleManager()
-                
-                # Add style by cloning the current one 
+
+                # Add style by cloning the current one
                 styleName = "label_connector_style"
 
                 # Checks if style with the same name already exists, if so increment its name with a 4 digits uuid
-                if styleName in styleManager.mapLayerStyles(): 
-                    styleName = "label_connector_style_" + uuid.uuid4().hex[:4] 
+                if styleName in styleManager.mapLayerStyles():
+                    styleName = "label_connector_style_" + uuid.uuid4().hex[:4]
 
                 if styleManager.addStyleFromLayer(styleName):
-                
+
                     # Changes the new style
                     if styleManager.setCurrentStyle(styleName):
-                
+
                         # create an auxiliary storage if not present
                         if self.checkAuxiliaryStorage():
                             self.createAuxiliaryFields()
