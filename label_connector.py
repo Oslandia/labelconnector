@@ -29,7 +29,8 @@ from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
 from PyQt5 import QtXml
 from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
-                       QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling)
+                       QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling,
+                       QgsRenderContext, QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol, QgsRuleBasedRenderer)
 from qgis.gui import QgsNewAuxiliaryLayerDialog
 
 # Initialize Qt resources from file resources.py
@@ -331,12 +332,8 @@ class LabelConnector:
                             self.createAuxiliaryFields()
                             self.createDefinedProperties()
 
-                        sym = self.layer.renderer().symbol()
-                        sym_layer = QgsGeometryGeneratorSymbolLayer.create(
-                            {'geometryModifier': expr})
-                        sym_layer.setSymbolType(QgsSymbol.Line)
-                        sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
-                        sym.appendSymbolLayer(sym_layer)
+                            self.addSymbol(expr)
+
                     else:
                         QMessageBox.warning(self.iface.mainWindow(), self.tr("Current style"),
                                             self.tr("Cannot change current style to '%'", styleName))
@@ -355,3 +352,36 @@ class LabelConnector:
             return False
 
         return True
+
+    def addSymbol(self, expression):
+        renderer = self.layer.renderer()
+        symbolType = renderer.type()
+
+        if symbolType in ("nullSymbol", "invertedPolygonRenderer", "25dRenderer", "grassEdit", "heatmapRenderer", "pointCluster", "pointDisplacement"):
+            # Impossible d'ajouter
+            print("erreur...")
+        elif symbolType == "singleSymbol":
+            sym = renderer.symbol()
+            sym_layer = QgsGeometryGeneratorSymbolLayer.create(
+                {'geometryModifier': expression})
+            sym_layer.setSymbolType(QgsSymbol.Line)
+            sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
+            sym.appendSymbolLayer(sym_layer)
+        elif symbolType in ("categorizedSymbol", "graduatedSymbol"):
+            for sym in renderer.symbols( QgsRenderContext.fromMapSettings( self.iface.mapCanvas().mapSettings() ) ):
+                sym_layer = QgsGeometryGeneratorSymbolLayer.create(
+                    {'geometryModifier': expression})
+                sym_layer.setSymbolType(QgsSymbol.Line)
+                sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
+                sym.appendSymbolLayer(sym_layer)
+        elif symbolType == "RuleRenderer":
+            qgsSymbols = [QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol]
+            sym = qgsSymbols[self.layer.geometryType()]()
+            sym_layer = QgsGeometryGeneratorSymbolLayer.create(
+                {'geometryModifier': expression})
+            sym_layer.setSymbolType(QgsSymbol.Line)
+            sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
+            sym.changeSymbolLayer(0, sym_layer)
+            r = QgsRuleBasedRenderer.Rule(sym, label="label connector", description="label connector")
+            renderer.rootRule().appendChild(r)
+
