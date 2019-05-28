@@ -26,7 +26,7 @@ import uuid
 import ntpath
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QAction, QMessageBox, QToolBar
+from PyQt5.QtWidgets import QAction, QToolBar
 from PyQt5 import QtXml
 from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
                        QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling,
@@ -84,6 +84,8 @@ class LabelConnector:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
+
+        self.messageBar = self.iface.messageBar()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -229,7 +231,7 @@ class LabelConnector:
         self.layer = self.iface.activeLayer()
 
         if not self.layer or (self.layer.type() != QgsMapLayer.VectorLayer):
-            QMessageBox.warning(self.iface.mainWindow(), self.tr("No active vector layer"),
+            self.messageBar.pushWarning( self.tr("No active vector layer"),
                                 self.tr("Label connector requires a vector layer"))
             return
 
@@ -250,7 +252,7 @@ class LabelConnector:
             if expressionFile:
                 ret = self.applyStyle(expressionFile)
             else:
-                QMessageBox.critical(self.iface.mainWindow(), self.tr("No expression file"),
+                self.messageBar.pushCritical( self.tr("No expression file"),
                                      self.tr("Cannot find a previous expression file applied."))
 
         QSettings().setValue("LabelConnector/lastFile", expressionFile)
@@ -262,7 +264,7 @@ class LabelConnector:
             dlg.exec_()
 
         if not self.layer.auxiliaryLayer():
-            QMessageBox.critical(self.iface.mainWindow(), self.tr("Auxiliary Layer Error"),
+            self.messageBar.pushCritical( self.tr("Auxiliary Layer Error"),
                                  "{}".format("Cannot create auxiliary storage for {}".format(self.layer.name())))
             return False
 
@@ -335,11 +337,11 @@ class LabelConnector:
                             self.addSymbol(expr)
 
                     else:
-                        QMessageBox.warning(self.iface.mainWindow(), self.tr("Current style"),
+                        self.messageBar.pushWarning( self.tr("Current style"),
                                             self.tr("Cannot change current style to '%'", styleName))
                         return False
                 else:
-                    QMessageBox.warning(self.iface.mainWindow(), self.tr("Add style"),
+                    self.messageBar.pushWarning( self.tr("Add style"),
                                         self.tr("Cannot add new style '%'", styleName))
                     return False
             if self.iface.mapCanvas().isCachingEnabled():
@@ -347,7 +349,7 @@ class LabelConnector:
             else:
                 self.iface.mapCanvas().refresh()
         except Exception as e:
-            QMessageBox.critical(self.iface.mainWindow(), self.tr("Error"),
+            self.messageBar.pushCritical( self.tr("Error"),
                                  "{}".format(str(e)))
             return False
 
@@ -359,7 +361,7 @@ class LabelConnector:
 
         if symbolType in ("nullSymbol", "invertedPolygonRenderer", "25dRenderer", "grassEdit", "heatmapRenderer", "pointCluster", "pointDisplacement"):
             # Impossible d'ajouter
-            print("erreur...")
+            self.messageBar.pushCritical(self.tr("Symbol error"), self.tr("Cannot apply LabelConnector to the current style."))
         elif symbolType == "singleSymbol":
             sym = renderer.symbol()
             sym_layer = QgsGeometryGeneratorSymbolLayer.create(
