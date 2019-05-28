@@ -24,8 +24,8 @@
 import os.path
 import uuid
 import ntpath
-from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt5.QtGui import QIcon, QColor
+from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QUrl
+from PyQt5.QtGui import QIcon, QColor, QDesktopServices
 from PyQt5.QtWidgets import QAction, QToolBar
 from PyQt5 import QtXml
 from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
@@ -193,6 +193,15 @@ class LabelConnector:
             icon_path,
             text=self.tr(u'Label connector settings'),
             callback=self.runSettings,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False)
+
+        # Help
+        icon_path = ':/plugins/label_connector/labelStyles.png'
+        self.add_action(
+            icon_path,
+            text=self.tr(u'Help'),
+            callback=self.runHelp,
             parent=self.iface.mainWindow(),
             add_to_toolbar=False)
 
@@ -416,3 +425,5 @@ class LabelConnector:
                 return False
             return True
 
+    def runHelp(self):
+        QDesktopServices.openUrl(QUrl("https://github.com/Oslandia/labelconnector/blob/master/help/help.md#{}-documentation-du-plugin-labelconnector".format(QSettings().value('locale/userLocale')[0:2])))
