@@ -418,7 +418,7 @@ class LabelConnector:
 
         elif symbolType == "RuleRenderer":
             # verify all symbols
-            isLabeledList = [self.isSymbolContainsLabelConnector(c.symbol()) for c in renderer.rootRule().children()]
+            isLabeledList = [self.isSymbolContainsLabelConnector(c.symbol()) for c in renderer.rootRule().children() if c.symbol() is not None]
             if len(isLabeledList) == 0 or not any(isLabeledList):
                 qgsSymbols = [QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol]
                 sym = qgsSymbols[self.layer.geometryType()]()
