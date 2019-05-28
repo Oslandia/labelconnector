@@ -239,9 +239,18 @@ class LabelConnector:
 
         self.layer = self.iface.activeLayer()
 
+        # Apply only on vector layer
         if not self.layer or (self.layer.type() != QgsMapLayer.VectorLayer):
             self.messageBar.pushWarning( self.tr("No active vector layer"),
                                 self.tr("Label connector requires a vector layer"))
+            return
+        
+        # Apply on some symbology style
+        renderer = self.layer.renderer()
+        symbolType = renderer.type()
+        if symbolType in ("nullSymbol", "invertedPolygonRenderer", "25dRenderer", "grassEdit", "heatmapRenderer", "pointCluster", "pointDisplacement"):
+            self.messageBar.pushCritical( self.tr("Unsupported symbol type"),
+                                          self.tr("Cannot apply a label connector to the current symbol style."))
             return
 
         expressionFile = QSettings().value("LabelConnector/lastFile", "")
@@ -381,8 +390,7 @@ class LabelConnector:
         symbolType = renderer.type()
 
         if symbolType in ("nullSymbol", "invertedPolygonRenderer", "25dRenderer", "grassEdit", "heatmapRenderer", "pointCluster", "pointDisplacement"):
-            # Impossible d'ajouter
-            self.messageBar.pushCritical(self.tr("Symbol error"), self.tr("Cannot apply LabelConnector to the current style."))
+            return False
 
         elif symbolType == "singleSymbol":
             sym = renderer.symbol()
