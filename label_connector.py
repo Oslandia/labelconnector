@@ -340,6 +340,8 @@ class LabelConnector:
                                 # delete created style
                                 styleManager.removeStyle( styleManager.currentStyle() )
                                 styleManager.setCurrentStyle(previousStyle)
+                            else:
+                                self.messageBar.pushInfo( self.tr("Success"), self.tr("Label connector successfully created") )
                     else:
                         self.messageBar.pushWarning( self.tr("Current style"),
                                             self.tr("Cannot change current style to '%'", styleName))
