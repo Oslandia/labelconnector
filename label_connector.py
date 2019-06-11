@@ -241,16 +241,16 @@ class LabelConnector:
 
         # Apply only on vector layer
         if not self.layer or (self.layer.type() != QgsMapLayer.VectorLayer):
-            self.messageBar.pushWarning( self.tr("No active vector layer"),
-                                self.tr("Label connector requires a vector layer"))
+            self.messageBar.pushWarning(self.tr("No active vector layer"),
+                                        self.tr("Label connector requires a vector layer"))
             return
-        
+
         # Apply on some symbology style
         renderer = self.layer.renderer()
         symbolType = renderer.type()
         if symbolType in ("nullSymbol", "invertedPolygonRenderer", "25dRenderer", "grassEdit", "heatmapRenderer", "pointCluster", "pointDisplacement"):
-            self.messageBar.pushCritical( self.tr("Unsupported symbol type"),
-                                          self.tr("Cannot apply a label connector to the current symbol style."))
+            self.messageBar.pushCritical(self.tr("Unsupported symbol type"),
+                                         self.tr("Cannot apply a label connector to the current symbol style."))
             return
 
         expressionFile = QSettings().value("LabelConnector/lastFile", "")
@@ -270,8 +270,8 @@ class LabelConnector:
             if expressionFile:
                 ret = self.applyStyle(expressionFile)
             else:
-                self.messageBar.pushCritical( self.tr("No expression file"),
-                                     self.tr("Cannot find a previous expression file applied."))
+                self.messageBar.pushCritical(self.tr("No expression file"),
+                                             self.tr("Cannot find a previous expression file applied."))
 
         QSettings().setValue("LabelConnector/lastFile", expressionFile)
 
@@ -282,8 +282,8 @@ class LabelConnector:
             dlg.exec_()
 
         if not self.layer.auxiliaryLayer():
-            self.messageBar.pushCritical( self.tr("Auxiliary Layer Error"),
-                                 "{}".format("Cannot create auxiliary storage for {}".format(self.layer.name())))
+            self.messageBar.pushCritical(self.tr("Auxiliary Layer Error"),
+                                         "{}".format("Cannot create auxiliary storage for {}".format(self.layer.name())))
             return False
 
         return True
@@ -335,6 +335,12 @@ class LabelConnector:
 
                 # read expression from file
                 expr = ''.join(f.readlines())
+                # special case for linestring
+                # replace point_on_surface by centroid
+                # for a more aesthetic look
+                if self.layer.geometryType() == QgsWkbTypes.LineGeometry:
+                    expr = expr.replace("point_on_surface", "centroid")
+
                 styleManager = self.layer.styleManager()
                 previousStyle = styleManager.currentStyle()
 
@@ -356,27 +362,30 @@ class LabelConnector:
                             self.createDefinedProperties()
 
                             if self.addSymbol(expr) == False:
-                                self.messageBar.pushCritical(self.tr("LabelConnector already exists"), self.tr("If you want to add a new LabelConnector on the style, please remove the comment in the expression first."))
+                                self.messageBar.pushCritical(self.tr("LabelConnector already exists"), self.tr(
+                                    "If you want to add a new LabelConnector on the style, please remove the comment in the expression first."))
                                 # delete created style
-                                styleManager.removeStyle( styleManager.currentStyle() )
+                                styleManager.removeStyle(
+                                    styleManager.currentStyle())
                                 styleManager.setCurrentStyle(previousStyle)
                             else:
-                                self.messageBar.pushInfo( self.tr("Success"), self.tr("Label connector successfully created") )
+                                self.messageBar.pushInfo(self.tr("Success"), self.tr(
+                                    "Label connector successfully created"))
                     else:
-                        self.messageBar.pushWarning( self.tr("Current style"),
-                                            self.tr("Cannot change current style to '%'", styleName))
+                        self.messageBar.pushWarning(self.tr("Current style"),
+                                                    self.tr("Cannot change current style to '%'", styleName))
                         return False
                 else:
-                    self.messageBar.pushWarning( self.tr("Add style"),
-                                        self.tr("Cannot add new style '%'", styleName))
+                    self.messageBar.pushWarning(self.tr("Add style"),
+                                                self.tr("Cannot add new style '%'", styleName))
                     return False
             if self.iface.mapCanvas().isCachingEnabled():
                 self.layer.triggerRepaint()
             else:
                 self.iface.mapCanvas().refresh()
         except Exception as e:
-            self.messageBar.pushCritical( self.tr("Error"),
-                                 "{}".format(str(e)))
+            self.messageBar.pushCritical(self.tr("Error"),
+                                         "{}".format(str(e)))
             return False
 
         return True
@@ -386,7 +395,7 @@ class LabelConnector:
             if type(sl) is QgsGeometryGeneratorSymbolLayer and sl.geometryExpression().find("/* Generated by LabelConnector plugin") == 0:
                 return True
         return False
-        
+
     def addSymbol(self, expression):
         renderer = self.layer.renderer()
         symbolType = renderer.type()
@@ -407,7 +416,7 @@ class LabelConnector:
             return True
 
         elif symbolType in ("categorizedSymbol", "graduatedSymbol"):
-            for sym in renderer.symbols( QgsRenderContext.fromMapSettings( self.iface.mapCanvas().mapSettings() ) ):
+            for sym in renderer.symbols(QgsRenderContext.fromMapSettings(self.iface.mapCanvas().mapSettings())):
                 if self.isSymbolContainsLabelConnector(sym) == False:
                     sym_layer = QgsGeometryGeneratorSymbolLayer.create(
                         {'geometryModifier': expression})
@@ -420,7 +429,8 @@ class LabelConnector:
 
         elif symbolType == "RuleRenderer":
             # verify all symbols
-            isLabeledList = [self.isSymbolContainsLabelConnector(c.symbol()) for c in renderer.rootRule().children() if c.symbol() is not None]
+            isLabeledList = [self.isSymbolContainsLabelConnector(
+                c.symbol()) for c in renderer.rootRule().children() if c.symbol() is not None]
             if len(isLabeledList) == 0 or not any(isLabeledList):
                 qgsSymbols = [QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol]
                 sym = qgsSymbols[self.layer.geometryType()]()
@@ -429,11 +439,13 @@ class LabelConnector:
                 sym_layer.setSymbolType(QgsSymbol.Line)
                 sym_layer.subSymbol().symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
                 sym.changeSymbolLayer(0, sym_layer)
-                r = QgsRuleBasedRenderer.Rule(sym, label="label connector", description="label connector")
+                r = QgsRuleBasedRenderer.Rule(
+                    sym, label="label connector", description="label connector")
                 renderer.rootRule().appendChild(r)
             else:
                 return False
             return True
 
     def runHelp(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/Oslandia/labelconnector/blob/master/help/help.md#{}-documentation-du-plugin-labelconnector".format(QSettings().value('locale/userLocale')[0:2])))
+        QDesktopServices.openUrl(QUrl(
+            "https://github.com/Oslandia/labelconnector/blob/master/help/help.md#{}-documentation-du-plugin-labelconnector".format(QSettings().value('locale/userLocale')[0:2])))
