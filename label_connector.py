@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import QAction, QToolBar
 from PyQt5 import QtXml
 from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
                        QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling,
-                       QgsRenderContext, QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol, QgsRuleBasedRenderer)
+                       QgsRenderContext, QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol, QgsRuleBasedRenderer, QgsWkbTypes)
 from qgis.gui import QgsNewAuxiliaryLayerDialog
 
 # Initialize Qt resources from file resources.py
@@ -318,6 +318,8 @@ class LabelConnector:
         pal_layer = QgsPalLayerSettings()
         pal_layer.setDataDefinedProperties(pc)
         pal_layer.fieldName = self.layer.fields()[0].name()
+        if self.layer.geometryType() == QgsWkbTypes.LineGeometry:
+            pal_layer.placement = QgsPalLayerSettings.Line
         pal_layer.enabled = True
 
         labeler = QgsVectorLayerSimpleLabeling(pal_layer)
