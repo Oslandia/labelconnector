@@ -30,7 +30,8 @@ from PyQt5.QtWidgets import QAction, QToolBar
 from PyQt5 import QtXml
 from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
                        QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling,
-                       QgsRenderContext, QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol, QgsRuleBasedRenderer, QgsWkbTypes)
+                       QgsRenderContext, QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol, QgsRuleBasedRenderer, QgsWkbTypes, QgsSettings)
+                       
 from qgis.gui import QgsNewAuxiliaryLayerDialog
 
 # Initialize Qt resources from file resources.py
@@ -42,7 +43,6 @@ from .label_connector_utils import populateComboBox
 
 
 class LabelConnector:
-    """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
         """Constructor.
@@ -57,7 +57,7 @@ class LabelConnector:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
@@ -447,5 +447,6 @@ class LabelConnector:
             return True
 
     def runHelp(self):
-        QDesktopServices.openUrl(QUrl(
-            "https://github.com/Oslandia/labelconnector/blob/master/help/help.md#{}-documentation-du-plugin-labelconnector".format(QSettings().value('locale/userLocale')[0:2])))
+        QDesktopServices.openUrl(QUrl("https://github.com/Oslandia/labelconnector/blob/master/help/help.md#{}-documentation-du-plugin-labelconnector".format(QSettings().value('locale/userLocale')[0:2])))
+
+
