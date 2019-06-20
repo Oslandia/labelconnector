@@ -44,13 +44,13 @@ PLUGINNAME = label_connector
 
 PY_FILES = \
 	__init__.py \
-	label_connector.py label_connector_dialog.py label_connector_settings.py
+	label_connector.py label_connector_dialog.py label_connector_settings.py label_connector_utils.py
 
 UI_FILES = label_connector_dialog_base.ui label_connector_dialog_settings.ui
 
-EXTRAS = metadata.txt label_style.png
+EXTRAS = metadata.txt labelStyles.png
 
-EXTRA_DIRS =
+EXTRA_DIRS = labelStyles
 
 COMPILED_RESOURCE_FILES = resources.py
 
@@ -128,7 +128,7 @@ deploy: compile doc transcompile
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 	# Copy extra directories if any
-	(foreach EXTRA_DIR,(EXTRA_DIRS), cp -R (EXTRA_DIR) (HOME)/(QGISDIR)/python/plugins/(PLUGINNAME)/;)
+	$(foreach EXTRA_DIR,$(EXTRA_DIRS), cp -R $(EXTRA_DIR) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/;)
 
 
 # The dclean target removes compiled python files from plugin directory
