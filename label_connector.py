@@ -307,7 +307,10 @@ class LabelConnector:
                  ('"auxiliary_storage_labeling_positiony"',
                   QgsPalLayerSettings.PositionY),
                  ('case when "auxiliary_storage_labeling_positionx" is NULL then NULL when  "auxiliary_storage_labeling_positionx" < x(point_on_surface($geometry)) then \'Right\' else \'Left\' end', QgsPalLayerSettings.Hali),
-                 ('\'Half\'', QgsPalLayerSettings.Vali))
+                 ('\'Half\'', QgsPalLayerSettings.Vali),
+                 ('True', QgsPalLayerSettings.BufferDraw)
+                 # ,('10', QgsPalLayerSettings.BufferSize)
+                 )
 
         pc = QgsPropertyCollection('labelConnector')
         for prop in props:
