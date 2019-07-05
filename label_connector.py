@@ -320,12 +320,13 @@ class LabelConnector:
 
         pal_layer = QgsPalLayerSettings()
         pal_layer.setDataDefinedProperties(pc)
-        if self.layer.labeling().settings().fieldName == '':
+        labeling = self.layer.labeling()
+        if labeling is None:
             pal_layer.fieldName = self.layer.fields()[0].name()
             pal_layer.isExpression = False
         else:
-            pal_layer.fieldName = self.layer.labeling().settings().fieldName
-            pal_layer.isExpression = self.layer.labeling().settings().isExpression
+            pal_layer.fieldName = labeling.settings().fieldName
+            pal_layer.isExpression = labeling.settings().isExpression
         if self.layer.geometryType() == QgsWkbTypes.LineGeometry:
             pal_layer.placement = QgsPalLayerSettings.Line
         pal_layer.enabled = True
