@@ -10,7 +10,7 @@
 name=Label Connector
 qgisMinimumVersion=3.0
 description=This plugin creates label connector (line from centroid to the label)
-version=0.1
+version=0.2
 author=Oslandia
 email=infos@oslandia.com
 
@@ -23,7 +23,7 @@ repository=https://github.com/oslandia/labelconnector
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog= fixes various issues
 # changelog[fr]=
 
 # Tags are comma separated with spaces allowed
