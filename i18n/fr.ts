@@ -98,8 +98,8 @@
     </message>
     <message>
         <location filename="../label_connector.py" line="373"/>
-        <source>If you want to add a new LabelConnector on the style, please remove the comment in the expression first.</source>
-        <translation>Si vous voulez ajouter un nouveau LabelConnector sur le style, veuillez d&apos;abord décommenter l&apos;expression.</translation>
+        <source>If you want to add a new LabelConnector on the style, please remove the comment in the geometry generator expression first in layer style properties.</source>
+        <translation type="unfinished">Si vous voulez ajouter un nouveau LabelConnector sur le style, veuillez d&apos;abord décommenter l&apos;expression du generateur de géométrie dans les propriétés de symbologie la couche.</translation>
     </message>
     <message>
         <location filename="../label_connector.py" line="380"/>

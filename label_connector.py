@@ -378,7 +378,7 @@ class LabelConnector:
 
                             if self.addSymbol(expr) == False:
                                 self.messageBar.pushCritical(self.tr("LabelConnector already exists"), self.tr(
-                                    "If you want to add a new LabelConnector on the style, please remove the comment in the expression first."))
+                                    "If you want to add a new LabelConnector on the style, please remove the comment in the geometry generator expression first in style properties."))
                                 # delete created style
                                 styleManager.removeStyle(
                                     styleManager.currentStyle())
