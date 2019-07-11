@@ -26,7 +26,7 @@ import uuid
 import ntpath
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QUrl
 from PyQt5.QtGui import QIcon, QColor, QDesktopServices
-from PyQt5.QtWidgets import QAction, QToolBar
+from PyQt5.QtWidgets import QAction, QToolBar, QToolButton
 from PyQt5 import QtXml
 from qgis.core import (QgsMapLayer, QgsGeometryGeneratorSymbolLayer, QgsSymbol, QgsPalLayerSettings,
                        QgsPropertyCollection, QgsProperty, QgsPropertyDefinition, QgsVectorLayerSimpleLabeling,
@@ -266,6 +266,12 @@ class LabelConnector:
                 ret = self.applyStyle(expressionFile)
                 QSettings().setValue("LabelConnector/showWindow",
                                      not self.dlg.rememberChoice.isChecked())
+                if ret:
+                    # Enable label toolbar and childrens
+                    labelToolBar = self.iface.mainWindow().findChild(QToolBar, "mLabelToolBar")
+                    labelToolBar.setEnabled(True)
+                    for l in labelToolBar.findChildren(QToolButton):
+                        l.setEnabled(True)
         else:
             if expressionFile:
                 ret = self.applyStyle(expressionFile)
