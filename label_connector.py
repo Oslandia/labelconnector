@@ -314,7 +314,7 @@ class LabelConnector:
                   QgsPalLayerSettings.PositionY),
                  ('case when "auxiliary_storage_labeling_positionx" is NULL then NULL when  "auxiliary_storage_labeling_positionx" < x( if( layer_property( @layer_name, \'geometry_type\' ) = \'Line\', closest_point( $geometry, make_point("auxiliary_storage_labeling_positionx", "auxiliary_storage_labeling_positiony") ), centroid($geometry) ) ) then \'Right\' else \'Left\' end', QgsPalLayerSettings.Hali),
                  ('\'Half\'', QgsPalLayerSettings.Vali),
-                 ('True', QgsPalLayerSettings.BufferDraw)
+                 ('if( "auxiliary_storage_labeling_positionx" is not NULL, True, False )', QgsPalLayerSettings.BufferDraw)
                  # ,('10', QgsPalLayerSettings.BufferSize)
                  )
 
