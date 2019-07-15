@@ -23,8 +23,8 @@ repository=https://github.com/oslandia/labelconnector
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog= fixes various issues
-# changelog[fr]=
+changelog= fixes first issues. Improve anchor point location for lines  
+changelog[fr]= Résolution des premières anomalies. Améliore le point d'ancrage pour les lignes
 
 # Tags are comma separated with spaces allowed
 tags=geometry, field, attribute, labeling, line, style, callouts, connectors
