@@ -22,7 +22,7 @@ Known issues:
 
  - [#28](https://github.com/Oslandia/labelconnector/issues/28) When the layer already has ruled based labels before using label connector action, the rules are lost and we get back to simple labeling. To prevent any lost, the plugin saves your old before doing anything so that yo can restore those settings.  ![Style saved](https://raw.githubusercontent.com/Oslandia/labelconnector/master/help/source/style_saved.png)
 
-
+If you wish to help in improving this plugin, let's create an issue in the bug tracker first ! 
 
 
 # FR: Documentation du plugin LabelConnector
@@ -47,5 +47,6 @@ Problèmes connus / limitations:
    
  - [#11](https://github.com/Oslandia/labelconnector/issues/11) L'ordre d'affichage des connecteurs et des objets géographique peut aboutir à des lignes dessinées en dessous de certains objets.  ![Lines underneath features](https://raw.githubusercontent.com/Oslandia/labelconnector/master/help/source/callout_underneath_feature.png). Il est possible de forcer l'ordre d'affichage en utilisant les niveaux de symbole. ![Lines underneath features](https://raw.githubusercontent.com/Oslandia/labelconnector/master/help/source/callout_underneath_feature_workaround.png)
 
- - [#28](https://github.com/Oslandia/labelconnector/issues/28) Si la couche cible contient des règles d'étiquetage, le plugin va les écraser en basculer en règle simple ! Le style précédent est sauvegardé pour éviter de perdre votre travail dans ce cas [Style saved](https://raw.githubusercontent.com/Oslandia/labelconnector/master/help/source/style_saved.png)
+ - [#28](https://github.com/Oslandia/labelconnector/issues/28) Si la couche cible contient des règles d'étiquetage, le plugin va les écraser en basculer en règle simple. Le style précédent est sauvegardé pour éviter de perdre votre travail dans ce cas ![Style saved](https://raw.githubusercontent.com/Oslandia/labelconnector/master/help/source/style_saved.png)
 
+Si vous souhaitez améliorer cette extension, n'hésitez pas à ouvrir un ticket. 
