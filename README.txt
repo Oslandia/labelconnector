@@ -7,3 +7,4 @@ LabelConnector will only take profit of the symbology power of geometry generato
 
 It is a temporary solution for QGIS 3.4 / 3.6 / 3.8. QGIS 3.10 now has the native feature of drawing callouts.  
 
+![Connectors in action](https://raw.githubusercontent.com/Oslandia/labelconnector/master/help/source/label_connectors.png)
